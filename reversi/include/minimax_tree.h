@@ -37,8 +37,10 @@ class MinimaxTreeNode {
     if (has_child) {
       return estimated_value_ = ret;
     } else if (skip) {
+      // game is over
       return estimated_value_ = EstimatedValue();
     } else {
+      // pass
       pass_.reset(new MinimaxTreeNode(chessboard_, who_ ^ 1));
       // do not decrement depth intentionally
       int32_t child_value = pass_->Search(depth, ret, true);
@@ -48,14 +50,35 @@ class MinimaxTreeNode {
   }
 
   inline int32_t EstimatedValue() {
+    int32_t winner = chessboard_.GetWinner();
+    switch (winner) {
+      case -2:
+        return 0;
+      case 0, 1:
+        return (who_ == winner) ? 1000 : -1000;
+      default:
+        break;
+    }
+
+    auto weight_func = [](int x, int y) {
+      if ((x == 0 || x == CHESSBOARD_SIZE - 1) &&
+          (y == 0 || y == CHESSBOARD_SIZE - 1)) {
+        return CHESSBOARD_SIZE * CHESSBOARD_SIZE;
+      }
+      if (x == 0 || x == CHESSBOARD_SIZE - 1 || y == 0 ||
+          y == CHESSBOARD_SIZE - 1)
+        return CHESSBOARD_SIZE;
+      return 1;
+    };
+
     int32_t ret = 0;
     for (int x = 0; x < CHESSBOARD_SIZE; x++)
       for (int y = 0; y < CHESSBOARD_SIZE; y++) {
-        ret += chessboard_.At(who_, x, y);
+        ret += chessboard_.At(who_, x, y) * weight_func(x, y);
       }
     for (int x = 0; x < CHESSBOARD_SIZE; x++)
       for (int y = 0; y < CHESSBOARD_SIZE; y++) {
-        ret -= chessboard_.At(who_ ^ 1, x, y);
+        ret -= chessboard_.At(who_ ^ 1, x, y) * weight_func(x, y);
       }
     return ret;
   }
