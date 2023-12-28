@@ -10,13 +10,11 @@ int Chessboard::GetWinner() const {
   // -1: to be continued
   // 0, 1: winner is 0/1
 
-  Chessboard output_chessboard;
-
   int tots[2] = {0, 0};
   for (int x = 0; x < CHESSBOARD_SIZE; x++) {
     for (int y = 0; y < CHESSBOARD_SIZE; y++) {
       for (int who : {0, 1}) {
-        if (Place(who, x, y, &output_chessboard)) {
+        if (Place(who, x, y, nullptr)) {
           return -1;
         }
         tots[who] += data_[Index(who, x, y)];
@@ -50,6 +48,10 @@ bool Chessboard::Place(int c, int x, int y,
   return false;
 
 success_flag:
+  if (output_chessboard == nullptr) {
+    return true;
+  }
+
   *output_chessboard = *this;
   output_chessboard->data_[Index(c, x, y)] = 1;
 

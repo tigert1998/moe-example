@@ -19,7 +19,7 @@ class MinimaxTreeNode {
 
   inline int32_t Search(uint32_t depth, int32_t alpha, bool skip) {
     if (depth <= 0) return estimated_value_ = EstimatedValue();
-    int32_t ret = std::numeric_limits<int32_t>::min();
+    int32_t ret = std::numeric_limits<int32_t>::lowest();
     Chessboard output_chessboard;
     bool has_child = false;
     for (int x = 0; x < CHESSBOARD_SIZE; x++) {
@@ -54,7 +54,8 @@ class MinimaxTreeNode {
     switch (winner) {
       case -2:
         return 0;
-      case 0, 1:
+      case 0:
+      case 1:
         return (who_ == winner) ? 1000 : -1000;
       default:
         break;
@@ -101,7 +102,7 @@ class MinimaxTree {
   }
 
   inline std::pair<uint32_t, uint32_t> Search(int depth) {
-    root_->Search(depth, std::numeric_limits<int32_t>::min(), false);
+    root_->Search(depth, std::numeric_limits<int32_t>::lowest(), false);
     for (auto x = 0; x < CHESSBOARD_SIZE; x++)
       for (auto y = 0; y < CHESSBOARD_SIZE; y++) {
         auto child = root_->childs_[root_->Index(x, y)].get();

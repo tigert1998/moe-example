@@ -1,5 +1,6 @@
 #include <vector>
 
+#include "mcts.h"
 #include "minimax_tree.h"
 
 void User(uint32_t who, const Chessboard &chessboard,
@@ -23,10 +24,26 @@ user_input_tag:
   }
 }
 
-void AI(uint32_t who, const Chessboard &chessboard,
-        Chessboard *output_chessboard) {
+void MiniMaxAI(uint32_t who, const Chessboard &chessboard,
+               Chessboard *output_chessboard) {
   MinimaxTree t(chessboard, who);
   auto [x, y] = t.Search(8);
+  if (x == -1 || y == -1)
+    *output_chessboard = chessboard;
+  else {
+    int32_t placed = chessboard.Place(who, x, y, output_chessboard);
+    if (!placed) {
+      fprintf(stderr, "AI fails to place a stone at (%d, %d)\n", x, y);
+      fflush(stderr);
+      exit(1);
+    }
+  }
+}
+
+void MCTSAI(uint32_t who, const Chessboard &chessboard,
+            Chessboard *output_chessboard) {
+  MCTS t(chessboard, who);
+  auto [x, y] = t.Search(10000, 1 / std::pow(2, 0.5));
   if (x == -1 || y == -1)
     *output_chessboard = chessboard;
   else {
@@ -51,7 +68,7 @@ int main() {
   scanf("%d", &starts_from);
 
   typedef void (*PlayerFunc)(uint32_t, const Chessboard &, Chessboard *);
-  const PlayerFunc players[2] = {&User, &AI};
+  const PlayerFunc players[2] = {&MiniMaxAI, &MCTSAI};
 
   int32_t i = starts_from, who = 0;
   while (1) {
